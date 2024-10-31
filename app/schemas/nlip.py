@@ -28,7 +28,7 @@ class AllowedFormats(CaseInsensitiveEnum):
 class NLIP_SubMessage(BaseModel):
     format: AllowedFormats
     subformat: str
-    content: str
+    content: Union[str, dict]
 
 class NLIP_BasicMessage(BaseModel):
     control: bool
@@ -100,7 +100,7 @@ class NLIP_Session:
         raise err.UnImplementedError("start", self.__class__.__name__)
 
     def execute(self, msg: NLIP_Message | NLIP_BasicMessage) -> NLIP_Message | NLIP_BasicMessage:
-        raise err.UnImplementedError("start", self.__class__.__name__)
+        raise err.UnImplementedError("execute", self.__class__.__name__)
  
     def stop(self):
         raise err.UnImplementedError("stop", self.__class__.__name__)
@@ -114,4 +114,4 @@ class NLIP_Application:
         raise err.UnImplementedError("shutdown", self.__class__.__name__)
 
     def create_session(self) -> NLIP_Session:
-        raise err.UnImplementedError("shutdown", self.__class__.__name__)
+        raise err.UnImplementedError("create_session", self.__class__.__name__)
