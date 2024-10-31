@@ -1,4 +1,4 @@
-from main import nlip
+from app.schemas import nlip
 
 from app.schemas.genai import SimpleGenAI
 from app.server import setup_server
@@ -32,7 +32,7 @@ class IntegratorSession(nlip.NLIP_Session):
             x[cfg.SERVER_NAME]: self.create_server(x) for x in self.server_cfg
         }
 
-    def execute(self, msg: nlip.NLIP_Message) -> nlip.NLIP_Message:
+    def execute(self, msg: nlip.NLIP_Message | nlip.NLIP_BasicMessage) -> nlip.NLIP_Message | nlip.NLIP_BasicMessage:
         question = nlip.collect_text(msg)
         responses = dict()
         for x in self.server_dict.keys():

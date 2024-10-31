@@ -30,7 +30,7 @@ class ChatSession(nlip.NLIP_Session):
     def start(self):
         self.server = StatefulGenAI(self.host, self.port, self.model)
 
-    def execute(self, msg: nlip.NLIP_Message) -> nlip.NLIP_Message:
+    def execute(self, msg: nlip.NLIP_Message | nlip.NLIP_BasicMessage) -> nlip.NLIP_Message | nlip.NLIP_BasicMessage:
         text = nlip.collect_text(msg)
         response = self.server.chat(text)
         return nlip.nlip_encode_text(response)

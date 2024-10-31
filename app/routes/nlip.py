@@ -32,7 +32,7 @@ async def session_invocation(request: Request):
 
 
 @router.post("/")
-async def chat_top(msg: nlip.NLIP_Message, session=Depends(session_invocation)):
+async def chat_top(msg: nlip.NLIP_BasicMessage | nlip.NLIP_Message, session=Depends(session_invocation)):
     try:
         response = session.execute(msg)
         return response

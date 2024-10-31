@@ -30,6 +30,11 @@ class NLIP_SubMessage(BaseModel):
     subformat: str
     content: str
 
+class NLIP_BasicMessage(BaseModel):
+    control: bool
+    format: str
+    subformat: str
+    content: Union[str, dict]
 
 class NLIP_Message(BaseModel):
     control: bool
@@ -37,6 +42,8 @@ class NLIP_Message(BaseModel):
     subformat: str
     content: Union[str, dict]
     submessages: list[NLIP_SubMessage] = list()
+
+
 
 
 class NLIP_Exception(Exception):
@@ -49,13 +56,13 @@ class NLIP_Exception(Exception):
 
 
 def nlip_encode_text(message: str, control=False, language="english"):
-    return NLIP_Message(
+    return NLIP_BasicMessage(
         control=control, format=AllowedFormats.text, subformat=language, content=message
     )
 
 
 def nlip_encode_dict(contents: dict, control=False):
-    return NLIP_Message(
+    return NLIP_BasicMessage(
         control=control,
         format=AllowedFormats.structured,
         subformat="json",
@@ -64,7 +71,7 @@ def nlip_encode_dict(contents: dict, control=False):
 
 
 def nlip_encode_exception(err: Exception):
-    return NLIP_Message(
+    return NLIP_BasicMessage(
         control=True,
         format="text",
         subformat="English",
@@ -72,17 +79,19 @@ def nlip_encode_exception(err: Exception):
     )
 
 
-def collect_text(msg: NLIP_Message, language: str = "english"):
+def collect_text(msg: NLIP_Message | NLIP_BasicMessage, language: str = "english"):
     answer: str = ""
     if AllowedFormats.text == msg.format:
         if msg.subformat.lower() == language.lower():
             answer = msg.content
+    if isinstance(msg, NLIP_BasicMessage):
+        return answer
     for submsg in msg.submessages:
         if (
             AllowedFormats.text == msg.format
-            and msg.subformat.lower() == language.lower()
+            and submsg.subformat.lower() == language.lower()
         ):
-            answer = answer + msg.content
+            answer = answer + submsg.content
     return answer
 
 
@@ -90,9 +99,9 @@ class NLIP_Session:
     def start(self):
         raise err.UnImplementedError("start", self.__class__.__name__)
 
-    def execute(self, msg: NLIP_Message) -> NLIP_Message:
+    def execute(self, msg: NLIP_Message | NLIP_BasicMessage) -> NLIP_Message | NLIP_BasicMessage:
         raise err.UnImplementedError("start", self.__class__.__name__)
-
+ 
     def stop(self):
         raise err.UnImplementedError("stop", self.__class__.__name__)
 
