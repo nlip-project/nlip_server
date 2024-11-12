@@ -1,8 +1,11 @@
 # NLIP Server  
 
-Welcome to the NLIP Server! This project is a straightforward implementation of the Natural Language Interaction Protocol (NLIP) specification, built with FastAPI in Python.
+Welcome to the NLIP Server! This project is a basic implementation of NLIP server side protocol. 
 
-The repository includes a sample chatbot and integration solutions located in the solutions directory.
+This package provides a library that can easily be customized to 
+create your own NLIP based Solution. 
+
+The package depends on the NLIP client package. 
 
 
 ## Installation
@@ -20,46 +23,10 @@ To set up the Python project, create a virtual environment using the following c
     ```bash
     poetry install
     ```
+## Defining a new Server Side Solution 
 
-Once the Python environment is set up, you can run the server.
+To define a new solution, you need to provide two subclasses of the provided abstract classes: NLIPApplicaiton and NLIPSession. 
 
-## Running the Chatbot Server
-**Note:** This solution assumes that you have an Ollama Server running and properly configured. For more details, please see the README.md in the solutions directory.
+These two classes are defined in module server
 
-You can start the chat server with:
-    ```bash
-    poetry run start-chat
-    ```
-
-To start chat with specific model
-    ```bash
-    CHAT_MODEL=llama2 poetry run start-chat
-    ```
-
-## Running the integration server 
-    ```bash
-    poetry run start-integration
-    ```
-
-## Format Code
-
-This project uses [Black](https://black.readthedocs.io/en/stable/) to format the code. You can format the code with the following command:
-
-    ```bash
-    poetry run format
-    ```
-
-## Publishing the Package
-
-To publish the package to PyPI, ensure that your changes are committed and then create a version tag. You can do this with the following commands:
-
-    ```bash
-    $ git tag v0.1.0  # Replace with new version
-    $ git push origin v0.1.0
-    ```
-
-## Defining a new Solution 
-To define a new solution, you need to provide a subclass of NLIPApplicaiton which needs to define its specialized version of NLIPSession. Both NLIPApplication and NLIPSession are defined in module nlip. 
-
-The main routine of the solution should call the start_server routine in module server to create an instance of the solution server-side application. 
-
+The main routine of the solution should call the start_server routine in module server to create an instance of the solution server-side application. start_server takes a subclass of NLIP_Application as an argument. 
