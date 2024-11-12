@@ -43,7 +43,7 @@ async def chat_top(msg: nlip.NLIP_BasicMessage | nlip.NLIP_Message, session=Depe
     try:
         response = session.execute(msg)
         return response
-    except nlip.Exception as e:
+    except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
