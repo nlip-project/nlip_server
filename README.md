@@ -15,14 +15,22 @@ This project uses [Poetry](https://python-poetry.org/docs/) for dependency manag
 To set up the Python project, create a virtual environment using the following commands.
 
 1. Create the virtual environment:
-    ```bash
-    poetry env use python
-    ```
+```bash
+poetry env use python
+```
   
 2. Install the application dependencies
-    ```bash
-    poetry install
-    ```
+```bash
+poetry install
+```
+## Publishing the Package
+
+To publish the package to PyPI, ensure that your changes are committed and then create a version tag. You can do this with the following commands:
+
+```bash
+git tag v0.1.0  # Replace with new version
+git push origin v0.1.0
+```
 ## Defining a new Server Side Solution 
 
 To define a new solution, you need to provide two subclasses of the provided abstract classes: NLIPApplicaiton and NLIPSession. 
