@@ -6,11 +6,14 @@ The main service application calls `setup_server` from this module.
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.routes.health import router as health_router
 from app.routes.nlip import router as nlip_router
 from app.schemas import nlip
 
+import random
+import string
 
 def create_app(client_app: nlip.NLIP_Application) -> FastAPI:
     @asynccontextmanager
@@ -32,6 +35,12 @@ def create_app(client_app: nlip.NLIP_Application) -> FastAPI:
         client_app.shutdown()
 
     app = FastAPI(lifespan=lifespan)
+
+    # Authlib.integrations.starlette_client.OAuth needs the Session middleware
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key="".join(random.choice(string.ascii_letters) for _ in range(16)),
+    )
 
     app.include_router(health_router, tags=["health"])
     # Include the NLIP routes
