@@ -5,7 +5,7 @@ Welcome to the NLIP Server! This project is a basic implementation of NLIP serve
 This package provides a library that can easily be customized to 
 create your own NLIP based Solution. 
 
-The package depends on the NLIP client package. 
+The package depends on the NLIP SDK package. 
 
 
 ## Installation
@@ -38,3 +38,13 @@ To define a new solution, you need to provide two subclasses of the provided abs
 These two classes are defined in module server
 
 The main routine of the solution should call the start_server routine in module server to create an instance of the solution server-side application. start_server takes a subclass of NLIP_Application as an argument. 
+
+An example simple echo application is included in the file echo.py
+
+To run the echo server, use the following command
+
+```bash
+poetry run fastapi dev nlip_server/echo.py
+```
+
+

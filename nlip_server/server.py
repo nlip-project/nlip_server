@@ -9,33 +9,76 @@ import logging
 
 from nlip_server.routes.health import router as health_router
 from nlip_server.routes.nlip import router as nlip_router
-from nlip_sdk.nlip import NLIP_BasicMessage, NLIP_Message
+from nlip_sdk.nlip import NLIP_Message
 from nlip_sdk import errors as err 
+import secrets
 
 logger = logging.getLogger('uvicorn.error')
 
 class NLIP_Session:
-    def start(self):
-        raise err.UnImplementedError("start", self.__class__.__name__)
+     
+    def set_correlator(self):
+        self.correlator = secrets.token_urlsafe()
+    
+    def get_correlator(self):
+        if hasattr(self, "correlator"):
+            return self.correlator
+        return None
 
-    def execute(self, msg: NLIP_Message | NLIP_BasicMessage) -> NLIP_Message | NLIP_BasicMessage:
+    def _print_withcorrelator(self, message:str):
+        correlator = self.get_correlator()
+        if correlator is not None:
+            message = message + f" with correlator {self.correlator}"
+        logger.info(message)
+
+    def log_info(self, message:str):
+        self._print_withcorrelator(message)
+        
+    def start(self):
+        self._print_withcorrelator("Session started")
+        
+
+    def execute(self, msg: NLIP_Message) -> NLIP_Message:
         raise err.UnImplementedError("execute", self.__class__.__name__)
+    
+    def correlated_execute(self, msg: NLIP_Message) -> NLIP_Message:
+        # Check if the other side has sent a correlator 
+        other_correlator =  msg.extract_conversation_token()
+        rsp = self.execute(msg);
+        # On the response, we need to add the correlator 
+        # There are three cases: 
+        #  The other side has sent a correlator -- which is the one to send back
+        #  The other side has not sent a correlator -- send one if set on local side
+        #  The other side has not sent a correlator but subclass added a correlator -- do nothing
+
+        existing_token = rsp.extract_conversation_token()
+        if other_correlator is not None: 
+            rsp.add_conversation_token(other_correlator,True)
+        else:  
+            if existing_token is None:
+                local_correlator = self.get_correlator()
+                if local_correlator is not None: 
+                    logger.info("Adding Correlator ")
+                    rsp.add_conversation_token(local_correlator)
+        return rsp
  
     def stop(self):
-        raise err.UnImplementedError("stop", self.__class__.__name__)
+        self._print_withcorrelator("Session stopped")
     
     def get_logger(self):
         return logger
+    
+
     
 
 
 
 class NLIP_Application:
     def startup(self):
-        raise err.UnImplementedError("startup", self.__class__.__name__)
+        raise err.UnImplementedError(f"startup", self.__class__.__name__)
 
     def shutdown(self):
-        raise err.UnImplementedError("shutdown", self.__class__.__name__)
+        raise err.UnImplementedError(f"shutdown", self.__class__.__name__)
 
     def get_logger(self):
         return logger
@@ -45,15 +88,26 @@ class NLIP_Application:
     
     def add_session(self, session_id:NLIP_Session) -> None:
         if hasattr(self, 'session_list'):
-            self.session_list.append(session_id)
+            if self.session_list is  None: 
+                self.session_list = list()   
         else: 
             self.session_list = list()
-            self.session_list.append(session_id)
+        self.session_list.append(session_id)
 
-    
     def remove_session(self, session_id:NLIP_Session) -> None:
         if hasattr(self, 'session_list'):
             self.session_list.remove(session_id)
+
+class SafeApplication(NLIP_Application):
+    
+    def startup(self):
+        logger.info(f"Called startup on {self.__class__.__name__}")
+
+    def shutdown(self):
+        logger.info(f"Called startup on {self.__class__.__name__}")
+    
+    
+
 
 
 def create_app(client_app: NLIP_Application) -> FastAPI:
