@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = {extras = ["standard"], version = "^0.115.12"}
-nlip-sdk = "^0.1.0"
+nlip-sdk = {path = "../nlip_sdk", develop = true}
 
 
 [build-system]

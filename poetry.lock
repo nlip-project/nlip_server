@@ -416,15 +416,16 @@ name = "nlip-sdk"
 version = "0.1.0"
 description = ""
 optional = false
-python-versions = "<4.0,>=3.10"
-files = [
-    {file = "nlip_sdk-0.1.0-py3-none-any.whl", hash = "sha256:79a3f053efc04ba23bac570e46077205c8bc5da5d09d083b8b059e8e04772000"},
-    {file = "nlip_sdk-0.1.0.tar.gz", hash = "sha256:d14698ef22626a85ac086f3571af7b7c5939837514bb66aa472891c6785a6609"},
-]
+python-versions = "^3.10"
+files = []
+develop = true
 
 [package.dependencies]
-httpx = ">=0.27.2,<0.28.0"
-pydantic = ">=2.9.2,<3.0.0"
+pydantic = "^2.9.2"
+
+[package.source]
+type = "directory"
+url = "../nlip_sdk"
 
 [[package]]
 name = "pydantic"
@@ -1016,4 +1017,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2d1ec16a9078a09d029cb676514b78e52a7bed3873c742d0522d1a4e8fe483e8"
+content-hash = "f67d2732dc94281b40c5b265b347af436b0ac4492c2197d1f7b6af92e9447285"
