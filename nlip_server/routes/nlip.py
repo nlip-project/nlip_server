@@ -19,7 +19,6 @@ async def start_session(request: Request):
             session = await session
         request.state.nlip_session = session
 
-        # handle sync or async start()
         start_result = session.start()
         if inspect.isawaitable(start_result):
             await start_result
