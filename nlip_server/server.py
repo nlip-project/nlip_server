@@ -45,8 +45,8 @@ class NLIP_Session:
     async def correlated_execute(self, msg: NLIP_Message) -> NLIP_Message:
         # Check if the other side has sent a correlator 
         other_correlator =  msg.extract_conversation_token()
-        rsp = await self.execute(msg);
-        # On the response, we need to add the correlator 
+        rsp_or_coro = self.execute(msg)
+        rsp = await rsp_or_coro if inspect.isawaitable(rsp_or_coro) else rsp_or_coro
         # There are three cases: 
         #  The other side has sent a correlator -- which is the one to send back
         #  The other side has not sent a correlator -- send one if set on local side
