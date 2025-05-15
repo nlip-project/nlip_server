@@ -12,6 +12,7 @@ from nlip_server.routes.nlip import router as nlip_router
 from nlip_sdk.nlip import NLIP_Message
 from nlip_sdk import errors as err 
 import secrets
+import inspect
 
 logger = logging.getLogger('uvicorn.error')
 
@@ -114,20 +115,30 @@ def create_app(client_app: NLIP_Application) -> FastAPI:
     @asynccontextmanager
     async def lifespan(this_app: FastAPI):
         # Startup logic
-        client_app.startup()
+        startup_result = client_app.startup()
+        if inspect.isawaitable(startup_result):
+            await startup_result
+
         client_app.session_list = list()
         this_app.state.client_app = client_app
 
         yield
+
         # Shutdown logic
         for session in client_app.session_list:
             try:
-                session.stop()
+                stop_result = session.stop()
+                if inspect.isawaitable(stop_result):
+                    await stop_result
             except Exception as e:
-                logger.error(f'Exception {e} in trying to stop a session -- Ignored') 
+                logger.error(f'Exception {e} in trying to stop a session -- Ignored')
 
         client_app.session_list = list()
-        client_app.shutdown()
+
+        shutdown_result = client_app.shutdown()
+        if inspect.isawaitable(shutdown_result):
+            await shutdown_result
+
 
     app = FastAPI(lifespan=lifespan)
 
