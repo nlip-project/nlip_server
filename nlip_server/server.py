@@ -34,17 +34,17 @@ class NLIP_Session:
     def log_info(self, message:str):
         self._print_withcorrelator(message)
         
-    def start(self):
+    async def start(self):
         self._print_withcorrelator("Session started")
         
 
-    def execute(self, msg: NLIP_Message) -> NLIP_Message:
+    async def execute(self, msg: NLIP_Message) -> NLIP_Message:
         raise err.UnImplementedError("execute", self.__class__.__name__)
     
-    def correlated_execute(self, msg: NLIP_Message) -> NLIP_Message:
+    async def correlated_execute(self, msg: NLIP_Message) -> NLIP_Message:
         # Check if the other side has sent a correlator 
         other_correlator =  msg.extract_conversation_token()
-        rsp = self.execute(msg);
+        rsp = await self.execute(msg);
         # On the response, we need to add the correlator 
         # There are three cases: 
         #  The other side has sent a correlator -- which is the one to send back
@@ -62,7 +62,7 @@ class NLIP_Session:
                     rsp.add_conversation_token(local_correlator)
         return rsp
  
-    def stop(self):
+    async def stop(self):
         self._print_withcorrelator("Session stopped")
     
     def get_logger(self):
@@ -74,10 +74,10 @@ class NLIP_Session:
 
 
 class NLIP_Application:
-    def startup(self):
+    async def startup(self):
         raise err.UnImplementedError(f"startup", self.__class__.__name__)
 
-    def shutdown(self):
+    async def shutdown(self):
         raise err.UnImplementedError(f"shutdown", self.__class__.__name__)
 
     def get_logger(self):
@@ -100,10 +100,10 @@ class NLIP_Application:
 
 class SafeApplication(NLIP_Application):
     
-    def startup(self):
+    async def startup(self):
         logger.info(f"Called startup on {self.__class__.__name__}")
 
-    def shutdown(self):
+    async def shutdown(self):
         logger.info(f"Called startup on {self.__class__.__name__}")
     
     
