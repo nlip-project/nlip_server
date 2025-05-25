@@ -12,6 +12,7 @@ from nlip_server.routes.nlip import router as nlip_router
 from nlip_sdk.nlip import NLIP_Message
 from nlip_sdk import errors as err 
 import secrets
+import inspect
 
 logger = logging.getLogger('uvicorn.error')
 
@@ -34,18 +35,18 @@ class NLIP_Session:
     def log_info(self, message:str):
         self._print_withcorrelator(message)
         
-    def start(self):
+    async def start(self):
         self._print_withcorrelator("Session started")
         
 
-    def execute(self, msg: NLIP_Message) -> NLIP_Message:
+    async def execute(self, msg: NLIP_Message) -> NLIP_Message:
         raise err.UnImplementedError("execute", self.__class__.__name__)
     
-    def correlated_execute(self, msg: NLIP_Message) -> NLIP_Message:
+    async def correlated_execute(self, msg: NLIP_Message) -> NLIP_Message:
         # Check if the other side has sent a correlator 
         other_correlator =  msg.extract_conversation_token()
-        rsp = self.execute(msg);
-        # On the response, we need to add the correlator 
+        rsp_or_coro = self.execute(msg)
+        rsp = await rsp_or_coro if inspect.isawaitable(rsp_or_coro) else rsp_or_coro
         # There are three cases: 
         #  The other side has sent a correlator -- which is the one to send back
         #  The other side has not sent a correlator -- send one if set on local side
@@ -62,7 +63,7 @@ class NLIP_Session:
                     rsp.add_conversation_token(local_correlator)
         return rsp
  
-    def stop(self):
+    async def stop(self):
         self._print_withcorrelator("Session stopped")
     
     def get_logger(self):
@@ -74,10 +75,10 @@ class NLIP_Session:
 
 
 class NLIP_Application:
-    def startup(self):
+    async def startup(self):
         raise err.UnImplementedError(f"startup", self.__class__.__name__)
 
-    def shutdown(self):
+    async def shutdown(self):
         raise err.UnImplementedError(f"shutdown", self.__class__.__name__)
 
     def get_logger(self):
@@ -100,10 +101,10 @@ class NLIP_Application:
 
 class SafeApplication(NLIP_Application):
     
-    def startup(self):
+    async def startup(self):
         logger.info(f"Called startup on {self.__class__.__name__}")
 
-    def shutdown(self):
+    async def shutdown(self):
         logger.info(f"Called startup on {self.__class__.__name__}")
     
     
@@ -114,20 +115,30 @@ def create_app(client_app: NLIP_Application) -> FastAPI:
     @asynccontextmanager
     async def lifespan(this_app: FastAPI):
         # Startup logic
-        client_app.startup()
+        startup_result = client_app.startup()
+        if inspect.isawaitable(startup_result):
+            await startup_result
+
         client_app.session_list = list()
         this_app.state.client_app = client_app
 
         yield
+
         # Shutdown logic
         for session in client_app.session_list:
             try:
-                session.stop()
+                stop_result = session.stop()
+                if inspect.isawaitable(stop_result):
+                    await stop_result
             except Exception as e:
-                logger.error(f'Exception {e} in trying to stop a session -- Ignored') 
+                logger.error(f'Exception {e} in trying to stop a session -- Ignored')
 
         client_app.session_list = list()
-        client_app.shutdown()
+
+        shutdown_result = client_app.shutdown()
+        if inspect.isawaitable(shutdown_result):
+            await shutdown_result
+
 
     app = FastAPI(lifespan=lifespan)
 
