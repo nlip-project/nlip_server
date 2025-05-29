@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nlip-server"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Dinesh Verma <dverma@us.ibm.com>", "Abhay Ratnaparkhi <abhay.ratnaparkhi1@ibm.com>"]
 readme = "README.md"
